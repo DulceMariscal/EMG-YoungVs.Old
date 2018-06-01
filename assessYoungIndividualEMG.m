@@ -1,0 +1,55 @@
+clear; close all;
+
+load normalizedYoungEmgData; 
+
+
+muscleOrder={'TA','MG','SEMT','VL','RF'};
+n_muscles = length(muscleOrder);
+useLateAdaptAsBaseline=false;
+n_subjects = 7;
+extremaMatrixYoung = NaN(n_subjects,n_muscles * 2,2);
+
+
+ep=defineEpochYoung('nanmean');
+refEp = defineReferenceEpoch(useLateAdaptAsBaseline,ep);
+
+newLabelPrefix = defineMuscleList(muscleOrder);
+
+%ll=normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
+ll = getLabel(normalizedTMFullAbrupt);
+
+l2=regexprep(regexprep(ll,'^Norm',''),'_s','s');
+normalizedTMFullAbrupt=normalizedTMFullAbrupt.renameParams(ll,l2);
+
+
+
+for i = 1:1
+    
+
+    adaptDataSubject = normalizedTMFullAbrupt.adaptData{1, i}; 
+
+    fh=figure('Units','Normalized','OuterPosition',[0 0 1 1]);
+    ph=tight_subplot(1,length(ep)+1,[.03 .005],.04,.04);
+    flip=true;
+
+    adaptDataSubject.plotCheckerboards(newLabelPrefix,refEp,fh,ph(1,1),[],flip); %First, plot reference epoch:   
+    [~,~,labels,dataE{1},dataRef{1}]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep,fh,ph(1,2:end),refEp,flip);%Second, the rest:
+    
+    
+    set(ph(:,1),'CLim',[-1 1]);
+    set(ph(:,2:end),'YTickLabels',{},'CLim',[-1 1]*2);
+    set(ph,'FontSize',8)
+    pos=get(ph(1,end),'Position');
+    axes(ph(1,end))
+    colorbar
+    set(ph(1,end),'Position',pos);
+    
+   
+    
+    extremaMatrixYoung(i,:,1) =  min(dataRef{1});
+    extremaMatrixYoung(i,:,2) =  max(dataRef{1});
+   
+    
+    %saveas(fh,['./Figures/AbsoluteEMG_Subject: ' num2str(i) '.png'])
+    
+end
