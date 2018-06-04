@@ -1,29 +1,29 @@
 clear; close all;
 
-load normalizedYoungEmgData; 
-
+load('/Users/samirsherlekar/Desktop/emg/Data/normalizedYoungEmgData.mat');
 
 muscleOrder={'TA','MG','SEMT','VL','RF'};
 n_muscles = length(muscleOrder);
 useLateAdaptAsBaseline=false;
+
 n_subjects = 7;
 extremaMatrixYoung = NaN(n_subjects,n_muscles * 2,2);
 
 
 ep=defineEpochYoung('nanmean');
-refEp = defineReferenceEpoch(useLateAdaptAsBaseline,ep);
+refEp = defineReferenceEpoch('Fast',ep);
 
 newLabelPrefix = defineMuscleList(muscleOrder);
 
 %ll=normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
-ll = getLabel(normalizedTMFullAbrupt);
+ll = normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^(s|f)[A-Z]+_s');
 
 l2=regexprep(regexprep(ll,'^Norm',''),'_s','s');
 normalizedTMFullAbrupt=normalizedTMFullAbrupt.renameParams(ll,l2);
 
 
 
-for i = 1:1
+for i = 1:n_subjects
     
 
     adaptDataSubject = normalizedTMFullAbrupt.adaptData{1, i}; 
