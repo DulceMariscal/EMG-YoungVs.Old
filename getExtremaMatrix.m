@@ -4,6 +4,5 @@ function [min_M, max_M, ratio_M] = getExtremaMatrix(extremaData)
     max_M = transpose(extremaData(:,:,2));
     ratio_M = max_M./min_M;
 
-
 end
 

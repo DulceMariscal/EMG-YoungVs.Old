@@ -11,7 +11,7 @@ function plotExtremaRatioEmgVoltages(ratio1, ratio2)
     title('Ratio of Max to Min EMG Voltages Fast vs. Baseline')
     legend('blue = baseline','red = fast baseline', 'circle = fast leg', 'diamond = slow leg');
     set(gca,'XTick',1:5,'XTickLabel',{'TA','MG','SEMT','VL','RF'},'YScale','log','Ytick',(0:5:60))
-    axis([.8 6 1 60]);
+    axis([.8 6 0 60]);
     grid on;
 
 

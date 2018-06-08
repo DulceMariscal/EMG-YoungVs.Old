@@ -25,3 +25,7 @@ n_muscles = length(muscleOrder);
 
 
 plotExtremaRatioEmgVoltages(ratio_M,ratio_M2)
+
+
+%plotExtremaRatioEmgVoltages(min_M,min_M2)
+%plotExtremaRatioEmgVoltages(max_M,max_M2)
