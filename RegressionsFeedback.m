@@ -2,24 +2,36 @@ clear all
 close all
 clc
 
-load group_age.mat;
-group_age{1}=group_age{1}.renameConditions({'gradual adaptation','OG post'},{'Adaptation','Washout'});
+load('/Users/samirsherlekar/Desktop/emg/Data/normalizedYoungEmgData.mat');
+
+normalizedTMFullAbrupt=normalizedTMFullAbrupt.renameConditions({'gradual adaptation','OG post'},{'Adaptation','Washout'});
+
+ss =normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
+s2 = regexprep(ss,'^Norm','dsjrs');
+normalizedTMFullAbrupt=normalizedTMFullAbrupt.renameParams(ss,s2);
+
+ep=defineEpochYoung('nanmean');
+refEp = defineReferenceEpoch('Base',ep);
+
+mOrder={'TA','MG','SEMT','VL','RF'};
+newLabelPrefix = defineMuscleList(mOrder);
+
+normalizedTMFullAbrupt = normalizedTMFullAbrupt.normalizeToBaselineEpoch(newLabelPrefix,ep(3,:));
 
 
 %% Get normalized parameters:
 %Define parameters we care about:
-mOrder={'TA','MG','SEMT','VL','RF'};
+
 nMusc=length(mOrder);
 type='s';
 labelPrefix=fliplr([strcat('f',mOrder) strcat('s',mOrder)]); %To display
 labelPrefixLong= strcat(labelPrefix,['_' type]); %Actual names
 
 %Renaming normalized parameters, for convenience:
-for k=1:length(group_age)
-    ll=group_age{k}.adaptData{1}.data.getLabelsThatMatch('^Norm');
-    l2=regexprep(regexprep(ll,'^Norm',''),'_s','s');
-    group_age{k}=group_age{k}.renameParams(ll,l2);
-end
+ll=normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
+l2=regexprep(regexprep(ll,'^Norm',''),'_s','s');
+normalizedTMFullAbrupt=normalizedTMFullAbrupt.renameParams(ll,l2);
+
 newLabelPrefix=fliplr(strcat(labelPrefix,'s'));
 
 eE=1;
@@ -34,17 +46,17 @@ baseEp_O=defineEpochs({'Base'},{'TM base'}',[-40],[eE],[eL],'nanmean');
 %extract data for stroke and controls separately
 padWithNaNFlag=true;
 
-[YdataEMG,labels]=group_age{1}.getPrefixedEpochData(newLabelPrefix,ep_Y,padWithNaNFlag);
-[YBB,labels]=group_age{1}.getPrefixedEpochData(newLabelPrefix,baseEp_Y,padWithNaNFlag);
+[YdataEMG,labels]=normalizedTMFullAbrupt.getPrefixedEpochData(newLabelPrefix,ep_Y,padWithNaNFlag);
+[YBB,labels]=normalizedTMFullAbrupt.getPrefixedEpochData(newLabelPrefix,baseEp_Y,padWithNaNFlag);
 YdataEMG=YdataEMG-YBB; %Removing base
 
-[OdataEMG,labels]=group_age{2}.getPrefixedEpochData(newLabelPrefix,ep_O,padWithNaNFlag);
-[OBB,labels]=group_age{2}.getPrefixedEpochData(newLabelPrefix,baseEp_O,padWithNaNFlag);
-OdataEMG=OdataEMG-OBB; %Removing base
+% [OdataEMG,labels]=group_age{2}.getPrefixedEpochData(newLabelPrefix,ep_O,padWithNaNFlag);
+% [OBB,labels]=group_age{2}.getPrefixedEpochData(newLabelPrefix,baseEp_O,padWithNaNFlag);
+% OdataEMG=OdataEMG-OBB; %Removing base
 
 %Flipping EMG:
 YdataEMG=reshape(flipEMGdata(reshape(YdataEMG,size(labels,1),size(labels,2),size(YdataEMG,2),size(YdataEMG,3)),1,2),numel(labels),size(YdataEMG,2),size(YdataEMG,3));
-OdataEMG=reshape(flipEMGdata(reshape(OdataEMG,size(labels,1),size(labels,2),size(OdataEMG,2),size(OdataEMG,3)),1,2),numel(labels),size(OdataEMG,2),size(OdataEMG,3));
+% OdataEMG=reshape(flipEMGdata(reshape(OdataEMG,size(labels,1),size(labels,2),size(OdataEMG,2),size(OdataEMG,3)),1,2),numel(labels),size(OdataEMG,2),size(OdataEMG,3));
 
 %% Get all the eA, lA, eP vectors
 shortNames_Y={'lB','eA','lA','eP','eRA'};
@@ -55,37 +67,40 @@ for i=1:length(shortNames_Y)
 end
 clear aux
 
-shortNames_O={'lB','eA','lA','eP','eSE'};
-longNames_O={'BASE','eA','lA','eP','eSE'};
-for i=1:length(shortNames_O)
-    aux=squeeze(OdataEMG(:,strcmp(ep_O.Properties.ObsNames,longNames_O{i}),:));
-    eval([shortNames_O{i} '_O=aux;']);   
-end
+% shortNames_O={'lB','eA','lA','eP','eSE'};
+% longNames_O={'BASE','eA','lA','eP','eSE'};
+% for i=1:length(shortNames_O)
+%     aux=squeeze(OdataEMG(:,strcmp(ep_O.Properties.ObsNames,longNames_O{i}),:));
+%     eval([shortNames_O{i} '_O=aux;']);   
+% end
 
-clear aux
+% clear aux
 
 %compute eAT
 eAT_Y=fftshift(eA_Y,1);
-eAT_O=fftshift(eA_O,1);
+% eAT_O=fftshift(eA_O,1);
 
 eRAT_Y = fftshift(eRA_Y,1);
-eSET_O = fftshift(eSE_O,1);
+% eSET_O = fftshift(eSE_O,1);
 %% Do group analysis:
 rob='off';
 
-ttY=table(-mean(eA_Y,2), mean(eAT_Y,2), -mean(lA_Y,2), mean(eP_Y,2)-mean(lA_Y,2),-mean(eRA_Y,2), mean(eRAT_Y,2),'VariableNames',{'eA','eAT','lA','eP_lA','eRA','eRAT'});
-ttO=table(-mean(eA_O,2), mean(eAT_O,2), -mean(lA_O,2), mean(eP_O,2)-mean(lA_O,2),-mean(eSE_O,2), mean(eSET_O,2),'VariableNames',{'eA','eAT','lA','eP_lA','eSE','eSET'});
+%ttY=table(-mean(eA_Y,2), mean(eAT_Y,2), -mean(lA_Y,2), mean(eP_Y,2)-mean(lA_Y,2),-mean(eRA_Y,2), mean(eRAT_Y,2),'VariableNames',{'eA','eAT','lA','eP_lA','eRA','eRAT'});
+ttY=table(-median(eA_Y,2), median(eAT_Y,2), -median(lA_Y,2), median(eP_Y,2)-median(lA_Y,2),-median(eRA_Y,2), median(eRAT_Y,2),'VariableNames',{'eA','eAT','lA','eP_lA','eRA','eRAT'});
 
-CmodelFit1a=fitlm(ttY,'eP_lA~ eRA+eRAT-1','RobustOpts',rob)
+% ttO=table(-mean(eA_O,2), mean(eAT_O,2), -mean(lA_O,2), mean(eP_O,2)-mean(lA_O,2),-mean(eSE_O,2), mean(eSET_O,2),'VariableNames',{'eA','eAT','lA','eP_lA','eSE','eSET'});
+
+CmodelFit1a=fitlm(ttY,'eP_lA~ eA+eAT','RobustOpts',rob)
 Clearn1a=CmodelFit1a.Coefficients.Estimate;
 Clearn1aCI=CmodelFit1a.coefCI;
+
 %Cr21a=uncenteredRsquared(CmodelFit1a);
 %Cr21a=Cr21a.uncentered;
 %disp(['Uncentered R^2=' num2str(Cr21a,3)])
 
-SmodelFit1a=fitlm(ttO,'eP_lA~eA+eAT+lA-1','RobustOpts',rob)
-Slearn1a=SmodelFit1a.Coefficients.Estimate;
-Slearn1aCI=SmodelFit1a.coefCI;
+% SmodelFit1a=fitlm(ttO,'eP_lA~eA+eAT+lA-1','RobustOpts',rob)
+% Slearn1a=SmodelFit1a.Coefficients.Estimate;
+% Slearn1aCI=SmodelFit1a.coefCI;
 
 
 

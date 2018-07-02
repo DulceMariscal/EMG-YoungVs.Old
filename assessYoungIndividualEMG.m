@@ -2,6 +2,11 @@ clear; close all;
 
 load('/Users/samirsherlekar/Desktop/emg/Data/normalizedYoungEmgData.mat');
 
+ss =normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
+s2 = regexprep(ss,'^Norm','dsjrs');
+normalizedTMFullAbrupt=normalizedTMFullAbrupt.renameParams(ss,s2);
+
+
 muscleOrder={'TA','MG','SEMT','VL','RF'};
 n_muscles = length(muscleOrder);
 useLateAdaptAsBaseline=false;
@@ -11,19 +16,21 @@ extremaMatrixYoung = NaN(n_subjects,n_muscles * 2,2);
 
 
 ep=defineEpochYoung('nanmean');
-refEp = defineReferenceEpoch('Fast',ep);
+refEp = defineReferenceEpoch('Base',ep);
 
 newLabelPrefix = defineMuscleList(muscleOrder);
 
-%ll=normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
-ll = normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^(s|f)[A-Z]+_s');
+normalizedTMFullAbrupt = normalizedTMFullAbrupt.normalizeToBaselineEpoch(newLabelPrefix,ep(3,:));
+
+ll=normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
+%ll = normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^(s|f)[A-Z]+_s');
 
 l2=regexprep(regexprep(ll,'^Norm',''),'_s','s');
 normalizedTMFullAbrupt=normalizedTMFullAbrupt.renameParams(ll,l2);
 
+newLabelPrefix = regexprep(newLabelPrefix,'_s','s');
 
-
-for i = 1:1
+for i = 1:n_subjects
     
 
     adaptDataSubject = normalizedTMFullAbrupt.adaptData{1, i}; 
@@ -50,6 +57,8 @@ for i = 1:1
     extremaMatrixYoung(i,:,2) =  max(dataRef{1});
    
     
-    %saveas(fh,['./Figures/AbsoluteEMG_Subject: ' num2str(i) '.png'])
+    
+      
+    saveas(fh,['./Figures/YoungNormalizedToFast_Subject_' num2str(i) '.png'])
     
 end

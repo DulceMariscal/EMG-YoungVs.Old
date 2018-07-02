@@ -2,49 +2,57 @@ clear; close all;
 
 load('/Users/samirsherlekar/Desktop/emg/Data/normalizedYoungEmgData.mat');
 
+%deleting existing norm values
+ss =normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
+s2 = regexprep(ss,'^Norm','dsjrs');
+normalizedTMFullAbrupt=normalizedTMFullAbrupt.renameParams(ss,s2);
+
 muscleOrder={'TA','MG','SEMT','VL','RF'};
 n_muscles = length(muscleOrder);
 useLateAdaptAsBaseline=false;
+
+
 
 n_subjects = 7;
 extremaMatrixYoung = NaN(n_subjects,n_muscles * 2,2);
 
 
 ep=defineEpochYoung('nanmean');
-refEp = defineReferenceEpoch('Fast',ep);
+refEp = defineReferenceEpoch('Base',ep);
 
 newLabelPrefix = defineMuscleList(muscleOrder);
+
+normalizedTMFullAbrupt = normalizedTMFullAbrupt.normalizeToBaselineEpoch(newLabelPrefix,ep(3,:));
+   
 
 ll=normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
 %ll = normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^(s|f)[A-Z]+_s');
 
 l2=regexprep(regexprep(ll,'^Norm',''),'_s','s');
+   
 normalizedTMFullAbrupt=normalizedTMFullAbrupt.renameParams(ll,l2);
 
+
+fh=figure('Units','Normalized','OuterPosition',[0 0 1 1]);
+ph=tight_subplot(1,length(ep)+1,[.03 .005],.04,.04);
+flip=true;
+
+summFlag='median';
+normalizedTMFullAbrupt.plotCheckerboards(regexprep(newLabelPrefix,'_s','s'),refEp,fh,ph(1,1),[],flip); %First, plot reference epoch:   
+[~,~,labels,dataE{1},dataRef{1}]=normalizedTMFullAbrupt.plotCheckerboards(regexprep(newLabelPrefix,'_s','s'),ep,fh,ph(1,2:end),refEp,flip,summFlag);%Second, the rest:
+
+
+
+set(ph(:,1),'CLim',[-1 1]);
+set(ph(:,2:end),'YTickLabels',{},'CLim',[-1 1]);
+set(ph,'FontSize',8)
+pos=get(ph(1,end),'Position');
+axes(ph(1,end))
+colorbar
+set(ph(1,end),'Position',pos);
+
    
-
-    fh=figure('Units','Normalized','OuterPosition',[0 0 1 1]);
-    ph=tight_subplot(1,length(ep)+1,[.03 .005],.04,.04);
-    flip=true;
-    
-    summFlag='median';
-    normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,refEp,fh,ph(1,1),[],flip); %First, plot reference epoch:   
-    [~,~,labels,dataE{1},dataRef{1}]=normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep,fh,ph(1,2:end),refEp,flip,summFlag);%Second, the rest:
-
-
-    
-    set(ph(:,1),'CLim',[-1 1]);
-    set(ph(:,2:end),'YTickLabels',{},'CLim',[-1 1]);
-    set(ph,'FontSize',8)
-    pos=get(ph(1,end),'Position');
-    axes(ph(1,end))
-    colorbar
-    set(ph(1,end),'Position',pos);
-    
-   
-    
-
-    minEffectSize2=0.1;
+minEffectSize2=0.1;
 fdr=.1;
 for k=1 %:length(groups)
     for i=1:length(ep)+1
@@ -85,4 +93,4 @@ for k=1 %:length(groups)
     end
 end
 
-saveas(fh,'./Figures/CheckerboardRefEpFast.png')
+%saveas(fh,'./Figures/CheckerboardRefEpFast.png')
