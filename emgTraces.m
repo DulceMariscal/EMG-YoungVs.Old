@@ -13,6 +13,12 @@ RAdap=expData.getAlignedField('procEMGData',conds(2),events,alignmentLengths).ge
 LAdap=expData.getAlignedField('procEMGData',conds(2),events([3,4,1,2]),alignmentLengths).getPartialDataAsATS({['L' muscle]});
 
 %% Create plots
+
+poster_colors;
+colorOrder=[p_red; p_orange; p_fade_green; p_fade_blue; p_plum; p_green; p_blue; p_fade_red; p_lime; p_yellow; [0 0 0]];
+condColors=colorOrder;
+
+
 for l=1:2
     switch l
         case 1
@@ -36,12 +42,12 @@ xt=[0:phaseSize:MM];
 %xt=[0:8:MM];
 fs=16; %FontSize
 
-    ph(i)=axes();
-    set(ph(i),'Position',[.07 .48 .35 .45]);
+    ph(l)=axes;
+    set(ph(l),'Position',[.07 .48 .35 .45]);
     hold on
 
-    B.plot(fh,ph(i),condColors(1,:),[],0,[-49:0],prc,true);
-    A.plot(fh,ph(i),condColors(2,:),[],0,[-49:0],prc,true);
+    B.plot(fh,ph(l),condColors(1,:),[],0,[-49:0],prc,true);
+    A.plot(fh,ph(l),condColors(2,:),[],0,[-49:0],prc,true);
     axis tight
     ylabel('')
     ylabel(tit)
@@ -83,10 +89,10 @@ fs=16; %FontSize
     %
 
 
-    axes(ph(i))
-    ll=findobj(ph(i),'Type','Line');
+    axes(ph(l))
+    ll=findobj(ph(l),'Type','Line');
     set(ll,'LineWidth',3)
-    set(ph(i),'FontSize',fs,'YTickLabel','','XTickLabel','','XTick',xt,'YTick','')
+    set(ph(l),'FontSize',fs,'YTickLabel','','XTickLabel','','XTick',xt,'YTick','')
     a=axis;
     yOff=a(3)-.2*(a(4)-a(3));
     %Add labels:
@@ -106,6 +112,6 @@ fs=16; %FontSize
     
     set(fh,'Position',[0 0 .45 .2])
 
-    saveFig(fh,'./',['Fig1B_' num2str(l)],1)
+%     saveFig(fh,'./',['Fig1B_' num2str(l)],1)
 end
 %%
