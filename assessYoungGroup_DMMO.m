@@ -1,7 +1,8 @@
 % clear; close all;
 
 % load('/Users/samirsherlekar/Desktop/emg/Data/normalizedYoungEmgData.mat');
-load('C:\Users\dum5\Box\GeneralizationStudy Data\NormalizedFastYoungEMGData.mat')
+% load('C:/Users/dum5/Box/11_Research_Projects/GeneralizationStudy Data/NormalizedFastYoungEMGData.mat')
+load('/Users/dulcemariscal/Box/11_Research_Projects/GeneralizationStudy Data/NormalizedFastYoungEMGData.mat')
 %deleting existing norm values
 ss =normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
 s2 = regexprep(ss,'^Norm','dsjrs');

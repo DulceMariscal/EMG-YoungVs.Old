@@ -2,8 +2,8 @@ clear; close all;
 
 load controls.mat;
 
-%muscleOrder={'TA','MG','SEMT','VL','RF'};
-muscleOrder={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'HIP', 'ADM', 'TFL', 'GLU'};
+muscleOrder={'TA','MG','SEMT','VL','RF'};
+% muscleOrder={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'HIP', 'ADM', 'TFL', 'GLU'};
 
 n_muscles = length(muscleOrder);
 n_subjects = 16;
